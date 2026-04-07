@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(
     description='asitop: Performance monitoring CLI tool for Apple Silicon')
 parser.add_argument('--interval', type=int, default=1,
                     help='Display interval and sampling interval for powermetrics (seconds)')
-parser.add_argument('--color', type=int, default=2,
+parser.add_argument('--color', type=int, default=6,
                     help='Choose display color (0~8)')
 parser.add_argument('--avg', type=int, default=30,
                     help='Interval for averaged values (seconds)')
@@ -22,13 +22,13 @@ args = parser.parse_args()
 def main():
     print("\nASITOP - Performance monitoring CLI tool for Apple Silicon")
     print("You can update ASITOP by running `pip install asitop --upgrade`")
-    print("Get help at `https://github.com/tlkh/asitop`")
+    print("Get help at `https://github.com/zhaodong-liu/asitop_M5Pro`")
     print("P.S. You are recommended to run ASITOP with `sudo asitop`\n")
     print("\n[1/3] Loading ASITOP\n")
     print("\033[?25l")
 
-    cpu1_gauge = HGauge(title="E-CPU Usage", val=0, color=args.color)
-    cpu2_gauge = HGauge(title="P-CPU Usage", val=0, color=args.color)
+    cpu1_gauge = HGauge(title="P-CPU Usage", val=0, color=args.color)
+    cpu2_gauge = HGauge(title="S-CPU Usage", val=0, color=args.color)
     gpu_gauge = HGauge(title="GPU Usage", val=0, color=args.color)
     ane_gauge = HGauge(title="ANE", val=0, color=args.color)
     gpu_ane_gauges = [gpu_gauge, ane_gauge]
@@ -64,8 +64,8 @@ def main():
 
     ram_gauge = HGauge(title="RAM Usage", val=0, color=args.color)
     """
-    ecpu_bw_gauge = HGauge(title="E-CPU B/W", val=50, color=args.color)
-    pcpu_bw_gauge = HGauge(title="P-CPU B/W", val=50, color=args.color)
+    ecpu_bw_gauge = HGauge(title="P-CPU B/W", val=50, color=args.color)
+    pcpu_bw_gauge = HGauge(title="S-CPU B/W", val=50, color=args.color)
     gpu_bw_gauge = HGauge(title="GPU B/W", val=50, color=args.color)
     media_bw_gauge = HGauge(title="Media B/W", val=50, color=args.color)
     bw_gauges = [HSplit(
@@ -123,9 +123,9 @@ def main():
         soc_info_dict["name"],
         " (cores: ",
         str(soc_info_dict["e_core_count"]),
-        "E+",
-        str(soc_info_dict["p_core_count"]),
         "P+",
+        str(soc_info_dict["p_core_count"]),
+        "S+",
         str(soc_info_dict["gpu_core_count"]),
         "GPU)"
     ])
@@ -194,7 +194,7 @@ def main():
                         thermal_throttle = "yes"
 
                     cpu1_gauge.title = "".join([
-                        "E-CPU Usage: ",
+                        "P-CPU Usage: ",
                         str(cpu_metrics_dict["E-Cluster_active"]),
                         "% @ ",
                         str(cpu_metrics_dict["E-Cluster_freq_Mhz"]),
@@ -203,7 +203,7 @@ def main():
                     cpu1_gauge.value = cpu_metrics_dict["E-Cluster_active"]
 
                     cpu2_gauge.title = "".join([
-                        "P-CPU Usage: ",
+                        "S-CPU Usage: ",
                         str(cpu_metrics_dict["P-Cluster_active"]),
                         "% @ ",
                         str(cpu_metrics_dict["P-Cluster_freq_Mhz"]),
@@ -289,7 +289,7 @@ def main():
                     ecpu_write_GB = bandwidth_metrics["ECPU DCS WR"] / \
                                     args.interval
                     ecpu_bw_gauge.title = "".join([
-                        "E-CPU: ",
+                        "P-CPU: ",
                         '{0:.1f}'.format(ecpu_read_GB + ecpu_write_GB),
                         "GB/s"
                     ])
@@ -303,7 +303,7 @@ def main():
                     pcpu_write_GB = bandwidth_metrics["PCPU DCS WR"] / \
                                     args.interval
                     pcpu_bw_gauge.title = "".join([
-                        "P-CPU: ",
+                        "S-CPU: ",
                         '{0:.1f}'.format(pcpu_read_GB + pcpu_write_GB),
                         "GB/s"
                     ])
