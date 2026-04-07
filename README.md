@@ -6,9 +6,17 @@ Performance monitoring CLI tool for Apple Silicon
 
 ![](images/asitop.png)
 
+
+1. Keep your source code in a stable location (like ~/Projects/asitop)
+
+2. Install with: 
+
 ```shell
-pip install asitop
+  pip install -e ~/Projects/asitop
 ```
+
+3. Run with: sudo asitop
+
 
 ## What is `asitop`
 

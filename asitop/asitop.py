@@ -38,6 +38,7 @@ def main():
     e_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(e_core_count)]
     p_core_count = soc_info_dict["p_core_count"]
     p_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(min(p_core_count, 8))]
+    p_core_gauges_ext = []
     p_core_split = [HSplit(
         *p_core_gauges,
     )]
@@ -223,12 +224,13 @@ def main():
                         core_count = 0
                         for i in cpu_metrics_dict["p_core"]:
                             core_gauges = p_core_gauges if core_count < 8 else p_core_gauges_ext
-                            core_gauges[core_count % 8].title = "".join([
-                                ("Core-" if p_core_count < 6 else 'C-') + str(i + 1) + " ",
-                                str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
-                                "%",
-                            ])
-                            core_gauges[core_count % 8].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
+                            if len(core_gauges) > 0:
+                                core_gauges[core_count % len(core_gauges)].title = "".join([
+                                    ("Core-" if p_core_count < 6 else 'C-') + str(i + 1) + " ",
+                                    str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
+                                    "%",
+                                ])
+                                core_gauges[core_count % len(core_gauges)].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
                             core_count += 1
 
                     gpu_gauge.title = "".join([
