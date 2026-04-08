@@ -20,8 +20,7 @@ args = parser.parse_args()
 
 
 def main():
-    print("\nASITOP - Performance monitoring CLI tool for Apple Silicon")
-    print("You can update ASITOP by running `pip install asitop --upgrade`")
+    print("\nASITOP - Performance monitoring CLI tool for Apple Silicon (M5 Pro supported)")
     print("Get help at `https://github.com/zhaodong-liu/asitop_M5Pro`")
     print("P.S. You are recommended to run ASITOP with `sudo asitop`\n")
     print("\n[1/3] Loading ASITOP\n")
@@ -34,23 +33,23 @@ def main():
     gpu_ane_gauges = [gpu_gauge, ane_gauge]
 
     soc_info_dict = get_soc_info()
-    e_core_count = soc_info_dict["e_core_count"]
-    e_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(e_core_count)]
     p_core_count = soc_info_dict["p_core_count"]
-    p_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(min(p_core_count, 8))]
-    p_core_gauges_ext = []
-    p_core_split = [HSplit(
-        *p_core_gauges,
+    p_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(p_core_count)]
+    s_core_count = soc_info_dict["s_core_count"]
+    s_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(min(s_core_count, 8))]
+    s_core_gauges_ext = []
+    s_core_split = [HSplit(
+        *s_core_gauges,
     )]
-    if p_core_count > 8:
-        p_core_gauges_ext = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(p_core_count - 8)]
-        p_core_split.append(HSplit(
-            *p_core_gauges_ext,
+    if s_core_count > 8:
+        s_core_gauges_ext = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(s_core_count - 8)]
+        s_core_split.append(HSplit(
+            *s_core_gauges_ext,
         ))
     processor_gauges = [cpu1_gauge,
-                        HSplit(*e_core_gauges),
+                        HSplit(*p_core_gauges),
                         cpu2_gauge,
-                        *p_core_split,
+                        *s_core_split,
                         *gpu_ane_gauges
                         ] if args.show_cores else [
         HSplit(cpu1_gauge, cpu2_gauge),
@@ -103,9 +102,9 @@ def main():
     cpu_title = "".join([
         soc_info_dict["name"],
         " (cores: ",
-        str(soc_info_dict["e_core_count"]),
-        "P+",
         str(soc_info_dict["p_core_count"]),
+        "P+",
+        str(soc_info_dict["s_core_count"]),
         "S+",
         str(soc_info_dict["gpu_core_count"]),
         "GPU)"
@@ -173,42 +172,42 @@ def main():
 
                     cpu1_gauge.title = "".join([
                         "P-CPU Usage: ",
-                        str(cpu_metrics_dict["E-Cluster_active"]),
-                        "% @ ",
-                        str(cpu_metrics_dict["E-Cluster_freq_Mhz"]),
-                        " MHz"
-                    ])
-                    cpu1_gauge.value = cpu_metrics_dict["E-Cluster_active"]
-
-                    cpu2_gauge.title = "".join([
-                        "S-CPU Usage: ",
                         str(cpu_metrics_dict["P-Cluster_active"]),
                         "% @ ",
                         str(cpu_metrics_dict["P-Cluster_freq_Mhz"]),
                         " MHz"
                     ])
-                    cpu2_gauge.value = cpu_metrics_dict["P-Cluster_active"]
+                    cpu1_gauge.value = cpu_metrics_dict["P-Cluster_active"]
+
+                    cpu2_gauge.title = "".join([
+                        "S-CPU Usage: ",
+                        str(cpu_metrics_dict["S-Cluster_active"]),
+                        "% @ ",
+                        str(cpu_metrics_dict["S-Cluster_freq_Mhz"]),
+                        " MHz"
+                    ])
+                    cpu2_gauge.value = cpu_metrics_dict["S-Cluster_active"]
 
                     if args.show_cores:
                         core_count = 0
-                        for i in cpu_metrics_dict["e_core"]:
-                            e_core_gauges[core_count % 4].title = "".join([
-                                "Core-" + str(i + 1) + " ",
-                                str(cpu_metrics_dict["E-Cluster" + str(i) + "_active"]),
+                        for i in cpu_metrics_dict["p_core"]:
+                            p_core_gauges[core_count % 4].title = "".join([
+                                ("Core-" if p_core_count < 6 else 'C') + str(i + 1) + " ",
+                                str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
                                 "%",
                             ])
-                            e_core_gauges[core_count % 4].value = cpu_metrics_dict["E-Cluster" + str(i) + "_active"]
+                            p_core_gauges[core_count % 4].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
                             core_count += 1
                         core_count = 0
-                        for i in cpu_metrics_dict["p_core"]:
-                            core_gauges = p_core_gauges if core_count < 8 else p_core_gauges_ext
+                        for i in cpu_metrics_dict["s_core"]:
+                            core_gauges = s_core_gauges if core_count < 8 else s_core_gauges_ext
                             if len(core_gauges) > 0:
                                 core_gauges[core_count % len(core_gauges)].title = "".join([
-                                    ("Core-" if p_core_count < 6 else 'C-') + str(i + 1) + " ",
-                                    str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
+                                    ("Core-" if s_core_count < 6 else 'C') + str(i + 1) + " ",
+                                    str(cpu_metrics_dict["S-Cluster" + str(i) + "_active"]),
                                     "%",
                                 ])
-                                core_gauges[core_count % len(core_gauges)].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
+                                core_gauges[core_count % len(core_gauges)].value = cpu_metrics_dict["S-Cluster" + str(i) + "_active"]
                             core_count += 1
 
                     gpu_gauge.title = "".join([

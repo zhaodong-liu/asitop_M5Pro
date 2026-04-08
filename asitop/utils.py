@@ -12,12 +12,13 @@ def parse_powermetrics(path='/tmp/asitop_powermetrics', timecode="0"):
     try:
         with open(path+timecode, 'rb') as fp:
             data = fp.read()
+        with open(os.path.expanduser('~/Desktop/asitop_powermetrics_backup'), 'wb') as backup_fp:
+            backup_fp.write(data)
         data = data.split(b'\x00')
         powermetrics_parse = plistlib.loads(data[-1])
         thermal_pressure = parse_thermal_pressure(powermetrics_parse)
         cpu_metrics_dict = parse_cpu_metrics(powermetrics_parse)
         gpu_metrics_dict = parse_gpu_metrics(powermetrics_parse)
-        #bandwidth_metrics = parse_bandwidth_metrics(powermetrics_parse)
         bandwidth_metrics = None
         timestamp = powermetrics_parse["timestamp"]
         return cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, bandwidth_metrics, timestamp
@@ -28,7 +29,6 @@ def parse_powermetrics(path='/tmp/asitop_powermetrics', timecode="0"):
                 thermal_pressure = parse_thermal_pressure(powermetrics_parse)
                 cpu_metrics_dict = parse_cpu_metrics(powermetrics_parse)
                 gpu_metrics_dict = parse_gpu_metrics(powermetrics_parse)
-                #bandwidth_metrics = parse_bandwidth_metrics(powermetrics_parse)
                 bandwidth_metrics = None
                 timestamp = powermetrics_parse["timestamp"]
                 return cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, bandwidth_metrics, timestamp
@@ -131,20 +131,18 @@ def get_soc_info():
     cpu_info_dict = get_cpu_info()
     core_counts_dict = get_core_counts()
     try:
-        e_core_count = core_counts_dict["hw.perflevel1.logicalcpu"]
-        p_core_count = core_counts_dict["hw.perflevel0.logicalcpu"]
+        p_core_count = core_counts_dict["hw.perflevel1.logicalcpu"]
+        s_core_count = core_counts_dict["hw.perflevel0.logicalcpu"]
     except:
-        e_core_count = "?"
         p_core_count = "?"
+        s_core_count = "?"
     soc_info = {
         "name": cpu_info_dict["machdep.cpu.brand_string"],
         "core_count": int(cpu_info_dict["machdep.cpu.core_count"]),
         "cpu_max_power": None,
         "gpu_max_power": None,
-        # "cpu_max_bw": None,
-        # "gpu_max_bw": None,
-        "e_core_count": e_core_count,
         "p_core_count": p_core_count,
+        "s_core_count": s_core_count,
         "gpu_core_count": get_gpu_cores()
     }
     # TDP (power)
@@ -164,7 +162,7 @@ def get_soc_info():
         soc_info["cpu_max_power"] = 25
         soc_info["gpu_max_power"] = 15
     elif soc_info["name"] == "Apple M5 Pro":
-        soc_info["cpu_max_power"] = 45
+        soc_info["cpu_max_power"] = 70
         soc_info["gpu_max_power"] = 45
     else:
         soc_info["cpu_max_power"] = 20
