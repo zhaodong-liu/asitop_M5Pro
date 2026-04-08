@@ -141,8 +141,8 @@ def get_soc_info():
         "core_count": int(cpu_info_dict["machdep.cpu.core_count"]),
         "cpu_max_power": None,
         "gpu_max_power": None,
-        "cpu_max_bw": None,
-        "gpu_max_bw": None,
+        # "cpu_max_bw": None,
+        # "gpu_max_bw": None,
         "e_core_count": e_core_count,
         "p_core_count": p_core_count,
         "gpu_core_count": get_gpu_cores()
@@ -163,26 +163,10 @@ def get_soc_info():
     elif soc_info["name"] == "Apple M2":
         soc_info["cpu_max_power"] = 25
         soc_info["gpu_max_power"] = 15
+    elif soc_info["name"] == "Apple M5 Pro":
+        soc_info["cpu_max_power"] = 45
+        soc_info["gpu_max_power"] = 45
     else:
         soc_info["cpu_max_power"] = 20
         soc_info["gpu_max_power"] = 20
-    # bandwidth
-    if soc_info["name"] == "Apple M1 Max":
-        soc_info["cpu_max_bw"] = 250
-        soc_info["gpu_max_bw"] = 400
-    elif soc_info["name"] == "Apple M1 Pro":
-        soc_info["cpu_max_bw"] = 200
-        soc_info["gpu_max_bw"] = 200
-    elif soc_info["name"] == "Apple M1":
-        soc_info["cpu_max_bw"] = 70
-        soc_info["gpu_max_bw"] = 70
-    elif soc_info["name"] == "Apple M1 Ultra":
-        soc_info["cpu_max_bw"] = 500
-        soc_info["gpu_max_bw"] = 800
-    elif soc_info["name"] == "Apple M2":
-        soc_info["cpu_max_bw"] = 100
-        soc_info["gpu_max_bw"] = 100
-    else:
-        soc_info["cpu_max_bw"] = 70
-        soc_info["gpu_max_bw"] = 70
     return soc_info

@@ -5,38 +5,14 @@ def parse_thermal_pressure(powermetrics_parse):
 def parse_bandwidth_metrics(powermetrics_parse):
     bandwidth_metrics = powermetrics_parse["bandwidth_counters"]
     bandwidth_metrics_dict = {}
-    # data_fields = ["PCPU0 DCS RD", "PCPU0 DCS WR",
-    #                "PCPU1 DCS RD", "PCPU1 DCS WR",
-    #                "PCPU2 DCS RD", "PCPU2 DCS WR",
-    #                "PCPU3 DCS RD", "PCPU3 DCS WR",
-    #                "PCPU DCS RD", "PCPU DCS WR",
-    #                "ECPU0 DCS RD", "ECPU0 DCS WR",
-    #                "ECPU1 DCS RD", "ECPU1 DCS WR",
-    #                "ECPU DCS RD", "ECPU DCS WR",
-    #                "GFX DCS RD", "GFX DCS WR",
-    #                "ISP DCS RD", "ISP DCS WR",
-    #                "STRM CODEC DCS RD", "STRM CODEC DCS WR",
-    #                "PRORES DCS RD", "PRORES DCS WR",
-    #                "VDEC DCS RD", "VDEC DCS WR",
-    #                "VENC0 DCS RD", "VENC0 DCS WR",
-    #                "VENC1 DCS RD", "VENC1 DCS WR",
-    #                "VENC2 DCS RD", "VENC2 DCS WR",
-    #                "VENC3 DCS RD", "VENC3 DCS WR",
-    #                "VENC DCS RD", "VENC DCS WR",
-    #                "JPG0 DCS RD", "JPG0 DCS WR",
-    #                "JPG1 DCS RD", "JPG1 DCS WR",
-    #                "JPG2 DCS RD", "JPG2 DCS WR",
-    #                "JPG3 DCS RD", "JPG3 DCS WR",
-    #                "JPG DCS RD", "JPG DCS WR",
-    #                "DCS RD", "DCS WR"]
-    data_fields = ["SCPU0 DCS RD", "SCPU0 DCS WR",
-                   "SCPU1 DCS RD", "SCPU1 DCS WR",
-                   "SCPU2 DCS RD", "SCPU2 DCS WR",
-                   "SCPU3 DCS RD", "SCPU3 DCS WR",
-                   "SCPU DCS RD", "SCPU DCS WR",
-                   "PCPU0 DCS RD", "PCPU0 DCS WR",
+    data_fields = ["PCPU0 DCS RD", "PCPU0 DCS WR",
                    "PCPU1 DCS RD", "PCPU1 DCS WR",
+                   "PCPU2 DCS RD", "PCPU2 DCS WR",
+                   "PCPU3 DCS RD", "PCPU3 DCS WR",
                    "PCPU DCS RD", "PCPU DCS WR",
+                   "ECPU0 DCS RD", "ECPU0 DCS WR",
+                   "ECPU1 DCS RD", "ECPU1 DCS WR",
+                   "ECPU DCS RD", "ECPU DCS WR",
                    "GFX DCS RD", "GFX DCS WR",
                    "ISP DCS RD", "ISP DCS WR",
                    "STRM CODEC DCS RD", "STRM CODEC DCS WR",
@@ -58,16 +34,16 @@ def parse_bandwidth_metrics(powermetrics_parse):
     for l in bandwidth_metrics:
         if l["name"] in data_fields:
             bandwidth_metrics_dict[l["name"]] = l["value"]/(1e9)
-    bandwidth_metrics_dict["SCPU DCS RD"] = bandwidth_metrics_dict["SCPU DCS RD"] + \
-        bandwidth_metrics_dict["SCPU0 DCS RD"] + \
-        bandwidth_metrics_dict["SCPU1 DCS RD"] + \
-        bandwidth_metrics_dict["SCPU2 DCS RD"] + \
-        bandwidth_metrics_dict["SCPU3 DCS RD"]
-    bandwidth_metrics_dict["SCPU DCS WR"] = bandwidth_metrics_dict["SCPU DCS WR"] + \
-        bandwidth_metrics_dict["SCPU0 DCS WR"] + \
-        bandwidth_metrics_dict["SCPU1 DCS WR"] + \
-        bandwidth_metrics_dict["SCPU2 DCS WR"] + \
-        bandwidth_metrics_dict["SCPU3 DCS WR"]
+    bandwidth_metrics_dict["PCPU DCS RD"] = bandwidth_metrics_dict["PCPU DCS RD"] + \
+        bandwidth_metrics_dict["PCPU0 DCS RD"] + \
+        bandwidth_metrics_dict["PCPU1 DCS RD"] + \
+        bandwidth_metrics_dict["PCPU2 DCS RD"] + \
+        bandwidth_metrics_dict["PCPU3 DCS RD"]
+    bandwidth_metrics_dict["PCPU DCS WR"] = bandwidth_metrics_dict["PCPU DCS WR"] + \
+        bandwidth_metrics_dict["PCPU0 DCS WR"] + \
+        bandwidth_metrics_dict["PCPU1 DCS WR"] + \
+        bandwidth_metrics_dict["PCPU2 DCS WR"] + \
+        bandwidth_metrics_dict["PCPU3 DCS WR"]
     bandwidth_metrics_dict["JPG DCS RD"] = bandwidth_metrics_dict["JPG DCS RD"] + \
         bandwidth_metrics_dict["JPG0 DCS RD"] + \
         bandwidth_metrics_dict["JPG1 DCS RD"] + \
@@ -119,17 +95,33 @@ def parse_cpu_metrics(powermetrics_parse):
     cpu_metric_dict["e_core"] = e_core
     cpu_metric_dict["p_core"] = p_core
     if "E-Cluster_active" not in cpu_metric_dict:
-        e_active_vals = [v for k, v in cpu_metric_dict.items() if k.startswith("P") and k.endswith("_active")]
-        cpu_metric_dict["E-Cluster_active"] = int(sum(e_active_vals) / len(e_active_vals)) if e_active_vals else 0
+        # M1 Ultra
+        cpu_metric_dict["E-Cluster_active"] = int(
+            (cpu_metric_dict["E0-Cluster_active"] + cpu_metric_dict["E1-Cluster_active"])/2)
     if "E-Cluster_freq_Mhz" not in cpu_metric_dict:
-        e_freq_vals = [v for k, v in cpu_metric_dict.items() if k.startswith("P") and k.endswith("_freq_Mhz")]
-        cpu_metric_dict["E-Cluster_freq_Mhz"] = max(e_freq_vals) if e_freq_vals else 0
+        # M1 Ultra
+        cpu_metric_dict["E-Cluster_freq_Mhz"] = max(
+            cpu_metric_dict["E0-Cluster_freq_Mhz"], cpu_metric_dict["E1-Cluster_freq_Mhz"])
     if "P-Cluster_active" not in cpu_metric_dict:
-        p_active_vals = [v for k, v in cpu_metric_dict.items() if k.startswith("S") and k.endswith("_active")]
-        cpu_metric_dict["P-Cluster_active"] = int(sum(p_active_vals) / len(p_active_vals)) if p_active_vals else 0
+        if "P2-Cluster_active" in cpu_metric_dict:
+            # M1 Ultra
+            cpu_metric_dict["P-Cluster_active"] = int((cpu_metric_dict["P0-Cluster_active"] + cpu_metric_dict["P1-Cluster_active"] +
+                                                      cpu_metric_dict["P2-Cluster_active"] + cpu_metric_dict["P3-Cluster_active"]) / 4)
+        else:
+            cpu_metric_dict["P-Cluster_active"] = int(
+                (cpu_metric_dict["P0-Cluster_active"] + cpu_metric_dict["P1-Cluster_active"])/2)
     if "P-Cluster_freq_Mhz" not in cpu_metric_dict:
-        p_freq_vals = [v for k, v in cpu_metric_dict.items() if k.startswith("S") and k.endswith("_freq_Mhz")]
-        cpu_metric_dict["P-Cluster_freq_Mhz"] = max(p_freq_vals) if p_freq_vals else 0
+        if "P2-Cluster_freq_Mhz" in cpu_metric_dict:
+            # M1 Ultra
+            freqs = [
+                cpu_metric_dict["P0-Cluster_freq_Mhz"],
+                cpu_metric_dict["P1-Cluster_freq_Mhz"],
+                cpu_metric_dict["P2-Cluster_freq_Mhz"],
+                cpu_metric_dict["P3-Cluster_freq_Mhz"]]
+            cpu_metric_dict["P-Cluster_freq_Mhz"] = max(freqs)
+        else:
+            cpu_metric_dict["P-Cluster_freq_Mhz"] = max(
+                cpu_metric_dict["P0-Cluster_freq_Mhz"], cpu_metric_dict["P1-Cluster_freq_Mhz"])
     # power
     cpu_metric_dict["ane_W"] = cpu_metrics["ane_energy"]/1000
     #cpu_metric_dict["dram_W"] = cpu_metrics["dram_energy"]/1000
