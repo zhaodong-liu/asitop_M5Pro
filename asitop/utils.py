@@ -12,8 +12,8 @@ def parse_powermetrics(path='/tmp/asitop_powermetrics', timecode="0"):
     try:
         with open(path+timecode, 'rb') as fp:
             data = fp.read()
-        with open(os.path.expanduser('~/Desktop/asitop_powermetrics_backup'), 'wb') as backup_fp:
-            backup_fp.write(data)
+        # with open(os.path.expanduser('~/Desktop/asitop_powermetrics_backup'), 'wb') as backup_fp:
+        #     backup_fp.write(data)
         data = data.split(b'\x00')
         powermetrics_parse = plistlib.loads(data[-1])
         thermal_pressure = parse_thermal_pressure(powermetrics_parse)
