@@ -1,18 +1,22 @@
-# asitop
-
-![PyPI - Downloads](https://img.shields.io/pypi/dm/asitop)
+# asitop (For Apple M5Pro)
 
 Performance monitoring CLI tool for Apple Silicon
 
 ![](images/asitop.png)
 
+Note: The source code is specifically modified for Apple M5 Pro (15CPU+16GPU). Since this is the only device I have, there might be some error on different models. For example, the S/P core numbering may be incorrect for other M5 Pro/Max series SoC. 
 
-1. Keep your source code in a stable location (like ~/Projects/asitop)
+This repo is forked from the original [asitop](https://github.com/tlkh/asitop), as the author has stopped any support for years, and the legacy version does not work for the latest Apple Silicon SoC. As Apple has changed the naming of CPU core clusters from P/E to S/P, I have also modified the code to support it. 
+
+
+
+
+1. Keep your source code in a stable location (like ~/Projects/asitop_M5Pro)
 
 2. Install with: 
 
 ```shell
-  pip install -e ~/Projects/asitop
+  pip install -e ~/Projects/asitop_M5Pro
 ```
 
 3. Run with: sudo asitop
@@ -34,9 +38,7 @@ A Python-based `nvtop`-inspired command line tool for Apple Silicon (aka M1) Mac
   * Chart for CPU/GPU power
   * Peak power, rolling average display
 
-`asitop` uses the built-in [`powermetrics`](https://www.unix.com/man-page/osx/1/powermetrics/) utility on macOS, which allows access to a variety of hardware performance counters. Note that it requires `sudo` to run due to `powermetrics` needing root access to run. `asitop` is lightweight and has minimal performance impact.
-
-**`asitop` only works on Apple Silicon Macs on macOS Monterey!**
+  `asitop` uses the built-in [`powermetrics`](https://www.unix.com/man-page/osx/1/powermetrics/) utility on macOS, which allows access to a variety of hardware performance counters. Note that it requires `sudo` to run due to `powermetrics` needing root access to run. `asitop` is lightweight and has minimal performance impact.
 
 ## Installation and Usage
 

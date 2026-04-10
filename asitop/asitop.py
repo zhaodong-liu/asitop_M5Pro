@@ -187,12 +187,14 @@ def main():
                         for i in cpu_metrics_dict["p_core"]:
                             # Handle M5 Pro core numbering:
                             # 0-4 = P0, 5-9 = P1
-                            if i < 5:
-                                core_label = "P0-" + str(i+1)
-                            elif i < 10:
-                                core_label = "P1-" + str(i+1)
-                            else:
-                                core_label = "?"
+                            # if i < 5:
+                            #     core_label = "P0-" + str(i+1)
+                            # elif i < 10:
+                            #     core_label = "P1-" + str(i+1)
+                            # else:
+                            #     core_label = "?"
+
+                            core_label = "P" + str(i)
 
                             p_core_gauges[core_count].title = "".join([
                                 core_label + " ",
