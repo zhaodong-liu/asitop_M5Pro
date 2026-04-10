@@ -19,9 +19,8 @@ def parse_powermetrics(path='/tmp/asitop_powermetrics', timecode="0"):
         thermal_pressure = parse_thermal_pressure(powermetrics_parse)
         cpu_metrics_dict = parse_cpu_metrics(powermetrics_parse)
         gpu_metrics_dict = parse_gpu_metrics(powermetrics_parse)
-        bandwidth_metrics = None
         timestamp = powermetrics_parse["timestamp"]
-        return cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, bandwidth_metrics, timestamp
+        return cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, timestamp
     except Exception as e:
         if data:
             if len(data) > 1:
@@ -29,9 +28,8 @@ def parse_powermetrics(path='/tmp/asitop_powermetrics', timecode="0"):
                 thermal_pressure = parse_thermal_pressure(powermetrics_parse)
                 cpu_metrics_dict = parse_cpu_metrics(powermetrics_parse)
                 gpu_metrics_dict = parse_gpu_metrics(powermetrics_parse)
-                bandwidth_metrics = None
                 timestamp = powermetrics_parse["timestamp"]
-                return cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, bandwidth_metrics, timestamp
+                return cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, timestamp
         return False
 
 

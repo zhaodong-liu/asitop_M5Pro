@@ -155,7 +155,7 @@ def main():
                 count += 1
             ready = parse_powermetrics(timecode=timecode)
             if ready:
-                cpu_metrics_dict, gpu_metrics_dict, thermal_pressure, bandwidth_metrics, timestamp = ready
+                cpu_metrics_dict, gpu_metrics_dict, thermal_pressure,timestamp = ready
 
                 if timestamp > last_timestamp:
                     last_timestamp = timestamp
@@ -274,6 +274,7 @@ def main():
                         package_peak_power = package_power_W
                     avg_package_power_list.append(package_power_W)
                     avg_package_power = get_avg(avg_package_power_list)
+
                     power_charts.title = "".join([
                         "CPU+GPU+ANE Power: ",
                         '{0:.2f}'.format(package_power_W),
@@ -282,7 +283,7 @@ def main():
                         "W peak: ",
                         '{0:.2f}'.format(package_peak_power),
                         "W) throttle: ",
-                        thermal_throttle,
+                        thermal_throttle
                     ])
 
                     cpu_power_percent = int(
