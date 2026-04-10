@@ -16,7 +16,7 @@ This repo is forked from the original [asitop](https://github.com/tlkh/asitop), 
 2. Install with: 
 
 ```shell
-  pip install -e ~/Projects/asitop_M5Pro
+  pip install ~/Projects/asitop_M5Pro
 ```
 
 3. Run with: sudo asitop
