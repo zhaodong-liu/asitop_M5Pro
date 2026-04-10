@@ -26,20 +26,36 @@ def main():
     print("\n[1/3] Loading ASITOP\n")
     print("\033[?25l")
 
-    cpu1_gauge = HGauge(title="P-CPU Usage", val=0, color=args.color)
-    cpu2_gauge = HGauge(title="S-CPU Usage", val=0, color=args.color)
+    soc_info_dict = get_soc_info()
+
+    if soc_info_dict["name"] == "Apple M5 Pro":
+        cpu1_gauge = HGauge(title="P-CPU Usage", val=0, color=args.color)
+        cpu2_gauge = HGauge(title="S-CPU Usage", val=0, color=args.color)
+    else:
+        cpu1_gauge = HGauge(title="E-CPU Usage", val=0, color=args.color)
+        cpu2_gauge = HGauge(title="P-CPU Usage", val=0, color=args.color)
+
     gpu_gauge = HGauge(title="GPU Usage", val=0, color=args.color)
     ane_gauge = HGauge(title="ANE", val=0, color=args.color)
     gpu_ane_gauges = [gpu_gauge, ane_gauge]
 
-    soc_info_dict = get_soc_info()
-    p_core_count = soc_info_dict["p_core_count"]
-    p_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(p_core_count)]
-    s_core_count = soc_info_dict["s_core_count"]
-    s_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(s_core_count)]
-    s_core_split = [HSplit(
-        *s_core_gauges,
-    )]
+    if soc_info_dict["name"] == "Apple M5 Pro":
+        p_core_count = soc_info_dict["p_core_count"]
+        # print(p_core_count)
+        p_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(p_core_count)]
+        s_core_count = soc_info_dict["s_core_count"]
+        # print(s_core_count)
+        s_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(s_core_count)]
+        s_core_split = [HSplit(
+            *s_core_gauges,
+        )]
+    else:
+        e_core_count = soc_info_dict["e_core_count"]
+        e_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(e_core_count)]
+        p_core_count = soc_info_dict["p_core_count"]
+        p_core_gauges = [VGauge(val=0, color=args.color, border_color=args.color) for _ in range(p_core_count)]
+        s_core_split = []
+
 
     processor_gauges = [cpu1_gauge,
                         HSplit(*p_core_gauges),
@@ -92,7 +108,6 @@ def main():
     )
 
     usage_gauges = ui.items[0]
-    #bw_gauges = memory_gauges.items[1]
 
     cpu_title = "".join([
         soc_info_dict["name"],
@@ -165,63 +180,115 @@ def main():
                     else:
                         thermal_throttle = "yes"
 
-                    cpu1_gauge.title = "".join([
-                        "P-CPU Usage: ",
-                        str(cpu_metrics_dict["P-Cluster_active"]),
-                        "% @ ",
-                        str(cpu_metrics_dict["P-Cluster_freq_Mhz"]),
-                        " MHz"
-                    ])
-                    cpu1_gauge.value = cpu_metrics_dict["P-Cluster_active"]
+                    if soc_info_dict["name"] == "Apple M5 Pro":
+                        cpu1_gauge.title = "".join([
+                            "P-CPU Usage: ",
+                            str(cpu_metrics_dict["P-Cluster_active"]),
+                            "% @ ",
+                            str(cpu_metrics_dict["P-Cluster_freq_Mhz"]),
+                            " MHz"
+                        ])
+                        cpu1_gauge.value = cpu_metrics_dict["P-Cluster_active"]
 
-                    cpu2_gauge.title = "".join([
-                        "S-CPU Usage: ",
-                        str(cpu_metrics_dict["S-Cluster_active"]),
-                        "% @ ",
-                        str(cpu_metrics_dict["S-Cluster_freq_Mhz"]),
-                        " MHz"
-                    ])
-                    cpu2_gauge.value = cpu_metrics_dict["S-Cluster_active"]
+                        cpu2_gauge.title = "".join([
+                            "S-CPU Usage: ",
+                            str(cpu_metrics_dict["S-Cluster_active"]),
+                            "% @ ",
+                            str(cpu_metrics_dict["S-Cluster_freq_Mhz"]),
+                            " MHz"
+                        ])
+                        cpu2_gauge.value = cpu_metrics_dict["S-Cluster_active"]
+                    else:
+                        cpu1_gauge.title = "".join([
+                            "E-CPU Usage: ",
+                            str(cpu_metrics_dict["E-Cluster_active"]),
+                            "% @ ",
+                            str(cpu_metrics_dict["E-Cluster_freq_Mhz"]),
+                            " MHz"
+                        ])
+                        cpu1_gauge.value = cpu_metrics_dict["E-Cluster_active"]
+
+                        cpu2_gauge.title = "".join([
+                            "P-CPU Usage: ",
+                            str(cpu_metrics_dict["P-Cluster_active"]),
+                            "% @ ",
+                            str(cpu_metrics_dict["P-Cluster_freq_Mhz"]),
+                            " MHz"
+                        ])
+                        cpu2_gauge.value = cpu_metrics_dict["P-Cluster_active"]
+
+
                     if args.show_cores:
-                        core_count = 0
-                        for i in cpu_metrics_dict["p_core"]:
-                            # Handle M5 Pro core numbering:
-                            # 0-4 = P0, 5-9 = P1
-                            # if i < 5:
-                            #     core_label = "P0-" + str(i+1)
-                            # elif i < 10:
-                            #     core_label = "P1-" + str(i+1)
-                            # else:
-                            #     core_label = "?"
+                        if soc_info_dict["name"] == "Apple M5 Pro":
+                            # Handle P-cores
+                            if "p_core" in cpu_metrics_dict and "P-Cluster_active" in cpu_metrics_dict:
+                                core_count = 0
+                                for i in cpu_metrics_dict["p_core"]:
+                                    # Handle M5 Pro core numbering:
+                                    # 0-4 = P0, 5-9 = P1
+                                    core_label = "P" + str(i+1)
 
-                            core_label = "P" + str(i)
+                                    # Use i directly as the index for p_core_gauges since we're dealing with actual core indices
+                                    if i < len(p_core_gauges):
+                                        p_core_gauges[i].title = "".join([
+                                            core_label + " ",
+                                            str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
+                                            "%",
+                                        ])
+                                        p_core_gauges[i].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
+                                    core_count += 1
 
-                            p_core_gauges[core_count].title = "".join([
-                                core_label + " ",
-                                str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
-                                "%",
-                            ])
-                            p_core_gauges[core_count].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
-                            core_count += 1
-                        core_count = 0
-                        for i in cpu_metrics_dict["s_core"]:
-                            # Handle M5 Pro S-core numbering:
-                            # 10-14 = S1-S5
-                            # Convert to proper display format for M5 Pro
+                            # Handle S-cores
+                            if "s_core" in cpu_metrics_dict and "S-Cluster_active" in cpu_metrics_dict:
+                                core_count = 0
+                                for i in cpu_metrics_dict["s_core"]:
+                                    # Handle M5 Pro S-core numbering:
+                                    # 10-14 = S1-S5
+                                    # Convert to proper display format for M5 Pro
 
-                            # For S cores, use index relative to 10 (0-based from 10)
-                            s_core_index = i - 10
-                            core_label = "S" + str(s_core_index+1)
+                                    # For S cores, use index relative to 10 (0-based from 10)
+                                    # Since S-core indices are 10-14, we need to adjust them to 0-4 for our list indexing
+                                    s_core_index = i - 10
+                                    core_label = "S" + str(s_core_index+1)
 
-                            core_gauges = s_core_gauges
-                            if len(core_gauges) > 0:
-                                core_gauges[core_count % len(core_gauges)].title = "".join([
-                                    core_label + " ",
-                                    str(cpu_metrics_dict["S-Cluster" + str(i) + "_active"]),
-                                    "%",
-                                ])
-                                core_gauges[core_count % len(core_gauges)].value = cpu_metrics_dict["S-Cluster" + str(i) + "_active"]
-                            core_count += 1
+                                    # For S cores, we want to properly map the indices
+                                    if s_core_index < len(s_core_gauges):
+                                        s_core_gauges[s_core_index].title = "".join([
+                                            core_label + " ",
+                                            str(cpu_metrics_dict["S-Cluster" + str(i) + "_active"]),
+                                            "%",
+                                        ])
+                                        s_core_gauges[s_core_index].value = cpu_metrics_dict["S-Cluster" + str(i) + "_active"]
+                                    core_count += 1
+
+                        else:
+                            # Handle E-cores
+                            if "e_core" in cpu_metrics_dict and "E-Cluster_active" in cpu_metrics_dict:
+                                core_count = 0
+                                for i in cpu_metrics_dict["e_core"]:
+                                    core_label = "E" + str(i+1)
+                                    if i < len(e_core_gauges):
+                                        e_core_gauges[i].title = "".join([
+                                            core_label + " ",
+                                            str(cpu_metrics_dict["E-Cluster" + str(i) + "_active"]),
+                                            "%",
+                                        ])
+                                        e_core_gauges[i].value = cpu_metrics_dict["E-Cluster" + str(i) + "_active"]
+                                    core_count += 1
+
+                            # Handle P-cores
+                            if "p_core" in cpu_metrics_dict and "P-Cluster_active" in cpu_metrics_dict:
+                                core_count = 0
+                                for i in cpu_metrics_dict["p_core"]:
+                                    core_label = "P" + str(i+1)
+                                    if i < len(p_core_gauges):
+                                        p_core_gauges[i].title = "".join([
+                                            core_label + " ",
+                                            str(cpu_metrics_dict["P-Cluster" + str(i) + "_active"]),
+                                            "%",
+                                        ])
+                                        p_core_gauges[i].value = cpu_metrics_dict["P-Cluster" + str(i) + "_active"]
+                                    core_count += 1
 
                     gpu_gauge.title = "".join([
                         "GPU Usage: ",
