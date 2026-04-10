@@ -1,4 +1,4 @@
-# asitop (For Apple M5Pro)
+# asitop (for Apple M5Pro)
 
 Performance monitoring CLI tool for Apple Silicon
 
@@ -6,7 +6,7 @@ Performance monitoring CLI tool for Apple Silicon
 
 Note: The source code is specifically modified for Apple M5 Pro (15CPU+16GPU). Since this is the only device I have, there might be some error on different models. For example, the S/P core numbering may be incorrect for other M5 Pro/Max series SoC. 
 
-This repo is forked from the original [asitop](https://github.com/tlkh/asitop), as the author has stopped any support for years, and the legacy version does not work for the latest Apple Silicon SoC. As Apple has changed the naming of CPU core clusters from P/E to S/P, I have also modified the code to support it. 
+This repo is forked from the original [asitop](https://github.com/tlkh/asitop), as the author has stopped any support for years, and the legacy version does not work for the latest Apple Silicon SoC. As Apple has changed the naming of CPU core clusters from P/E to S/P, I have also modified the code to support this change. 
 
 
 
